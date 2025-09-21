@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Startup Idea to Business Plan Assistant</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0d1b2a;
+      --panel: rgba(255, 255, 255, 0.08);
+      --accent: #1abc9c;
+      --accent-dark: #138a72;
+      --text: #e9f1f7;
+      --muted: #94a3b8;
+      font-size: 16px;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, rgba(13, 27, 42, 0.95), rgba(15, 76, 117, 0.8));
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 2.5rem 5vw 1.5rem;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3rem);
+      letter-spacing: 0.04em;
+    }
+
+    header p {
+      color: var(--muted);
+      max-width: 60ch;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 2rem;
+      padding: 0 5vw 3rem;
+    }
+
+    section, aside {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 1.8rem;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 25px 55px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .question-counter {
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .question {
+      font-size: 1.3rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      border-radius: 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 76, 117, 0.25);
+      color: inherit;
+      padding: 1rem 1.1rem;
+      min-height: 150px;
+      font-size: 1rem;
+      line-height: 1.5;
+      resize: vertical;
+      transition: border 160ms ease, background 160ms ease;
+    }
+
+    input[type="text"] {
+      min-height: auto;
+    }
+
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(26, 188, 156, 0.08);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.6rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #0b1620;
+      box-shadow: 0 15px 35px rgba(26, 188, 156, 0.4);
+    }
+
+    button.primary:hover {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: inherit;
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    button.secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .plan-preview {
+      background: rgba(8, 18, 28, 0.55);
+      border-radius: 1.2rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.98rem;
+      line-height: 1.6;
+      max-height: 55vh;
+      overflow-y: auto;
+      white-space: pre-line;
+    }
+
+    .placeholder {
+      color: var(--muted);
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+
+    .placeholder[hidden] {
+      display: none;
+    }
+
+    .plan-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.25rem;
+    }
+
+    .plan-title {
+      margin: 0 0 0.5rem;
+      font-size: 1.35rem;
+    }
+
+    .plan-summary {
+      margin: 0 0 1.25rem;
+      color: rgba(233, 241, 247, 0.85);
+    }
+
+    .plan-section {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 0.8rem;
+      padding: 1rem 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 1rem;
+    }
+
+    .plan-section h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+    }
+
+    .plan-section p {
+      margin: 0;
+    }
+
+    .plan-section ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .plan-section li::marker {
+      color: var(--accent);
+    }
+
+    .status-message {
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-height: 1.25rem;
+    }
+
+    .status-message[hidden] {
+      display: none;
+    }
+
+    .status-message[data-tone="success"] {
+      color: #7bffc7;
+    }
+
+    .status-message[data-tone="warning"] {
+      color: #ffda7b;
+    }
+
+    .progress {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      background: var(--accent);
+      width: 0;
+      transition: width 200ms ease;
+    }
+
+    .saved-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      overflow-y: auto;
+      max-height: 65vh;
+      padding-right: 0.3rem;
+    }
+
+    .saved-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 1rem 1.2rem;
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: border 160ms ease, transform 160ms ease;
+      cursor: pointer;
+    }
+
+    .saved-item:hover {
+      border-color: rgba(26, 188, 156, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .saved-item.active {
+      border-color: var(--accent);
+      background: rgba(26, 188, 156, 0.1);
+    }
+
+    .saved-item h4 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .saved-item span {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .saved-item span strong {
+      color: rgba(233, 241, 247, 0.9);
+      font-weight: 600;
+    }
+
+    @media (max-width: 1100px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        order: -1;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header, main {
+        padding-left: 1.2rem;
+        padding-right: 1.2rem;
+      }
+
+      section, aside {
+        padding: 1.2rem;
+        border-radius: 1.1rem;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Idea Architect</h1>
+    <p>
+      A guided workspace that interviews you about your startup idea and instantly shapes your answers into
+      a polished business plan. Save each concept and revisit them as your thinking evolves.
+    </p>
+  </header>
+  <main>
+    <section aria-labelledby="question-heading">
+      <div
+        class="progress"
+        id="progress-track"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        aria-label="Answered questions"
+      >
+        <span id="progress-bar"></span>
+      </div>
+      <div class="question-counter" id="question-counter">Step 1 of 9 • 0 answered</div>
+      <h2 id="question-heading" class="question">Tell me about your startup idea.</h2>
+      <textarea id="response" placeholder="Describe your idea in a few sentences..."></textarea>
+      <div class="controls">
+        <button type="button" class="secondary" id="prev-btn" disabled>Previous</button>
+        <div style="display:flex; gap:0.75rem; flex-wrap: wrap;">
+          <button type="button" class="secondary" id="clear-btn">Reset</button>
+          <button type="button" class="primary" id="next-btn">Next</button>
+        </div>
+      </div>
+    </section>
+    <aside>
+      <div>
+        <h3 style="margin:0;">Saved Business Plans</h3>
+        <p style="margin:0; color:var(--muted);">Click an idea to read its generated plan.</p>
+      </div>
+      <div class="saved-list" id="saved-list">
+        <p class="placeholder" id="placeholder">No ideas saved yet. Craft your first plan to see it here.</p>
+      </div>
+      <button type="button" class="primary" id="save-btn" disabled>Save this Plan</button>
+    </aside>
+    <section aria-labelledby="plan-heading">
+      <h2 id="plan-heading" style="margin:0;">Business Plan Preview</h2>
+      <p style="margin:0; color:var(--muted);">Your plan updates as you answer questions. Finish all steps to unlock saving.</p>
+      <div class="plan-actions">
+        <button type="button" class="secondary" id="copy-btn" disabled>Copy Plan</button>
+        <button type="button" class="secondary" id="download-btn" disabled>Download Markdown</button>
+      </div>
+      <article class="plan-preview" id="plan-preview">
+        <p class="placeholder">Answer the questions to generate a strategic summary.</p>
+      </article>
+      <p class="status-message" id="status-message" role="status" aria-live="polite" hidden></p>
+    </section>
+  </main>
+
+  <template id="saved-item-template">
+    <div class="saved-item" role="button" tabindex="0">
+      <h4></h4>
+      <span></span>
+    </div>
+  </template>
+
+  <script>
+    const steps = [
+      {
+        key: 'vision',
+        question: 'Pitch your idea in one bold sentence. What problem are you solving?',
+        placeholder: 'We help busy professionals eat healthy meals without cooking by...'
+      },
+      {
+        key: 'audience',
+        question: 'Who desperately needs this solution? Describe your primary customers.',
+        placeholder: 'Our target audience is...'
+      },
+      {
+        key: 'value',
+        question: 'What makes your approach stand out from alternatives?',
+        placeholder: 'Unlike competitors, we...'
+      },
+      {
+        key: 'solution',
+        question: 'How does your product or service actually work? Walk through the experience.',
+        placeholder: 'Users discover us via..., sign up by..., and then...'
+      },
+      {
+        key: 'revenue',
+        question: 'How will you make money? Detail your revenue model or pricing strategy.',
+        placeholder: 'We generate revenue through...'
+      },
+      {
+        key: 'marketing',
+        question: 'What is your go-to-market plan? Outline acquisition and retention tactics.',
+        placeholder: 'To attract customers we will...'
+      },
+      {
+        key: 'operations',
+        question: 'What does it take to deliver this reliably? Consider team, tech, and partners.',
+        placeholder: 'Key partners and resources include...'
+      },
+      {
+        key: 'finances',
+        question: 'What funding or resources do you need to launch and scale?',
+        placeholder: 'We require... to reach...'
+      },
+      {
+        key: 'milestones',
+        question: 'What major milestones will prove traction over the next 12-18 months?',
+        placeholder: 'Quarter 1: ..., Quarter 2: ...'
+      }
+    ];
+
+    const state = steps.reduce((acc, step) => {
+      acc[step.key] = '';
+      return acc;
+    }, {});
+
+    let currentStep = 0;
+    let savedPlans = [];
+    let activePlanId = null;
+    let statusTimeout = null;
+    let lastGeneratedPlan = null;
+
+    const responseField = document.getElementById('response');
+    const questionHeading = document.getElementById('question-heading');
+    const questionCounter = document.getElementById('question-counter');
+    const progressBar = document.getElementById('progress-bar');
+    const progressTrack = document.getElementById('progress-track');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const planPreview = document.getElementById('plan-preview');
+    const copyBtn = document.getElementById('copy-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const statusMessage = document.getElementById('status-message');
+    const savedList = document.getElementById('saved-list');
+    const placeholder = document.getElementById('placeholder');
+    const savedItemTemplate = document.getElementById('saved-item-template');
+
+    function normalizeAnswers(answers = {}) {
+      return steps.reduce((acc, step) => {
+        const value = answers[step.key];
+        acc[step.key] = typeof value === 'string' ? value.trim() : '';
+        return acc;
+      }, {});
+    }
+
+    function announce(message, tone = 'info') {
+      if (!statusMessage) return;
+      statusMessage.textContent = message;
+      statusMessage.dataset.tone = tone;
+      statusMessage.hidden = false;
+      clearTimeout(statusTimeout);
+      statusTimeout = setTimeout(() => {
+        statusMessage.hidden = true;
+      }, 4000);
+    }
+
+    function formatDate(timestamp) {
+      return new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(timestamp));
+    }
+
+    function updateProgress() {
+      const answered = Object.values(normalizeAnswers(state)).filter(Boolean).length;
+      const progress = Math.round((answered / steps.length) * 100);
+      progressBar.style.width = `${progress}%`;
+      progressTrack.setAttribute('aria-valuenow', String(progress));
+      questionCounter.textContent = `Step ${currentStep + 1} of ${steps.length} • ${answered} answered`;
+    }
+
+    function generatePlan(planState) {
+      const answers = normalizeAnswers(planState);
+      const ideaTitle = answers.vision ? answers.vision.split(/[\n.!?]/)[0].trim() : 'Untitled Idea';
+
+      const summaryParts = [];
+      if (answers.vision) summaryParts.push(answers.vision);
+      if (answers.audience) summaryParts.push(`We serve ${answers.audience}.`);
+      if (answers.value) summaryParts.push(`We win because ${answers.value}.`);
+      const summary = summaryParts.join(' ');
+
+      const sections = [
+        {
+          heading: 'Problem & Vision',
+          body: answers.vision || 'Clarify the pressing problem you are solving and the bold outcome you aim to deliver.'
+        },
+        {
+          heading: 'Target Audience',
+          body: answers.audience || 'Define the specific customer group that feels the pain point most acutely.'
+        },
+        {
+          heading: 'Unique Value Proposition',
+          body: answers.value || 'Explain what sets your approach apart from existing alternatives.'
+        },
+        {
+          heading: 'Solution & Experience',
+          body: answers.solution ? `How it works: ${answers.solution}` : 'Outline the end-to-end experience from discovery to daily use.'
+        },
+        {
+          heading: 'Business Model',
+          body: answers.revenue ? `Revenue strategy: ${answers.revenue}` : 'Describe how the company will generate sustainable revenue.'
+        },
+        {
+          heading: 'Marketing & Growth',
+          body: answers.marketing ? `Go-to-market plan: ${answers.marketing}` : 'Summarize how you will attract, convert, and retain customers.'
+        },
+        {
+          heading: 'Operations Plan',
+          body: answers.operations || 'Identify the people, tools, and partners required to deliver reliably.'
+        },
+        {
+          heading: 'Financial Plan',
+          body: answers.finances || 'Note the funding, capital, or resources needed to launch and scale.'
+        },
+        {
+          heading: 'Milestones',
+          body: answers.milestones || 'Lay out the key proof points you will hit over the next 12–18 months.'
+        }
+      ];
+
+      const keyActions = [
+        answers.marketing && `Launch go-to-market efforts: ${answers.marketing}`,
+        answers.finances && `Resource requirements: ${answers.finances}`,
+        answers.operations && `Operational priorities: ${answers.operations}`,
+        answers.milestones && `Track momentum with milestones: ${answers.milestones}`
+      ].filter(Boolean);
+
+      const markdownSections = [
+        `# ${ideaTitle}`,
+        summary,
+        ...sections.map((section) => `## ${section.heading}\n${section.body}`),
+        keyActions.length ? `## Next Steps\n${keyActions.map((action) => `- ${action}`).join('\\n')}` : ''
+      ].filter(Boolean);
+
+      return {
+        title: ideaTitle,
+        summary,
+        sections,
+        keyActions,
+        markdown: markdownSections.join('\\n\\n'),
+        answers
+      };
+    }
+
+    function renderPlan(planState = state) {
+      const answers = normalizeAnswers(planState);
+      const hasContent = Object.values(answers).some(Boolean);
+
+      if (!hasContent) {
+        planPreview.innerHTML = '<p class="placeholder">Answer the questions to generate a strategic summary.</p>';
+        copyBtn.disabled = true;
+        downloadBtn.disabled = true;
+        saveBtn.disabled = true;
+        lastGeneratedPlan = null;
+        return;
+      }
+
+      const plan = generatePlan(answers);
+      lastGeneratedPlan = plan;
+
+      planPreview.innerHTML = '';
+
+      const titleEl = document.createElement('h3');
+      titleEl.className = 'plan-title';
+      titleEl.textContent = plan.title;
+      planPreview.appendChild(titleEl);
+
+      if (plan.summary) {
+        const summaryEl = document.createElement('p');
+        summaryEl.className = 'plan-summary';
+        summaryEl.textContent = plan.summary;
+        planPreview.appendChild(summaryEl);
+      }
+
+      plan.sections.forEach((section) => {
+        const sectionEl = document.createElement('section');
+        sectionEl.className = 'plan-section';
+        const headingEl = document.createElement('h3');
+        headingEl.textContent = section.heading;
+        const bodyEl = document.createElement('p');
+        bodyEl.textContent = section.body;
+        sectionEl.appendChild(headingEl);
+        sectionEl.appendChild(bodyEl);
+        planPreview.appendChild(sectionEl);
+      });
+
+      if (plan.keyActions.length) {
+        const actionsEl = document.createElement('section');
+        actionsEl.className = 'plan-section';
+        const headingEl = document.createElement('h3');
+        headingEl.textContent = 'Next Steps';
+        const listEl = document.createElement('ul');
+        plan.keyActions.forEach((action) => {
+          const item = document.createElement('li');
+          item.textContent = action;
+          listEl.appendChild(item);
+        });
+        actionsEl.appendChild(headingEl);
+        actionsEl.appendChild(listEl);
+        planPreview.appendChild(actionsEl);
+      }
+
+      copyBtn.disabled = false;
+      downloadBtn.disabled = false;
+      const allAnswered = steps.every((step) => answers[step.key]);
+      saveBtn.disabled = !allAnswered;
+    }
+
+    function updateStep() {
+      const step = steps[currentStep];
+      questionHeading.textContent = step.question;
+      responseField.placeholder = step.placeholder;
+      responseField.value = state[step.key];
+      prevBtn.disabled = currentStep === 0;
+      nextBtn.textContent = currentStep === steps.length - 1 ? 'Review Plan' : 'Next';
+      saveBtn.textContent = activePlanId ? 'Save Changes' : 'Save this Plan';
+      updateProgress();
+      renderPlan();
+    }
+
+    function persistPlans() {
+      localStorage.setItem('businessPlans', JSON.stringify(savedPlans));
+    }
+
+    function setActiveSavedItem(id) {
+      savedList.querySelectorAll('.saved-item').forEach((item) => {
+        item.classList.toggle('active', item.dataset.id === id);
+      });
+    }
+
+    function renderSavedList() {
+      savedList.querySelectorAll('.saved-item').forEach((node) => node.remove());
+
+      if (!savedPlans.length) {
+        placeholder.hidden = false;
+        return;
+      }
+
+      placeholder.hidden = true;
+      const fragment = document.createDocumentFragment();
+
+      savedPlans
+        .slice()
+        .sort((a, b) => b.savedAt - a.savedAt)
+        .forEach((plan) => {
+          const node = savedItemTemplate.content.firstElementChild.cloneNode(true);
+          node.dataset.id = plan.id;
+          node.querySelector('h4').textContent = plan.title;
+          const meta = node.querySelector('span');
+          meta.textContent = '';
+          const dateEl = document.createElement('strong');
+          dateEl.textContent = formatDate(plan.savedAt);
+          meta.appendChild(dateEl);
+          const snippetSource = (plan.summary || (plan.answers && plan.answers.vision) || '').trim();
+          if (snippetSource) {
+            const snippet = snippetSource.length > 120 ? `${snippetSource.slice(0, 117)}…` : snippetSource;
+            meta.append(` · ${snippet}`);
+          }
+          node.addEventListener('click', () => openSavedPlan(plan.id));
+          node.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openSavedPlan(plan.id);
+            }
+          });
+          fragment.appendChild(node);
+        });
+
+      savedList.appendChild(fragment);
+      setActiveSavedItem(activePlanId);
+    }
+
+    function openSavedPlan(id) {
+      const plan = savedPlans.find((item) => item.id === id);
+      if (!plan) return;
+
+      activePlanId = id;
+      const answers = normalizeAnswers(plan.answers);
+      Object.keys(state).forEach((key) => {
+        state[key] = answers[key];
+      });
+      currentStep = 0;
+      updateStep();
+      responseField.focus();
+      setActiveSavedItem(id);
+      saveBtn.textContent = 'Save Changes';
+      announce('Loaded saved idea. You can refine and save your updates.', 'info');
+    }
+
+    function legacyCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        announce('Plan copied to your clipboard.', 'success');
+      } catch (error) {
+        console.error('Copy failed', error);
+        announce('Unable to copy automatically. Try downloading instead.', 'warning');
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+
+    function copyPlan() {
+      if (!lastGeneratedPlan) return;
+      const text = lastGeneratedPlan.markdown;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          () => announce('Plan copied to your clipboard.', 'success'),
+          () => legacyCopy(text)
+        );
+      } else {
+        legacyCopy(text);
+      }
+    }
+
+    function createId() {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      const random = Math.floor(Math.random() * 1e6)
+        .toString()
+        .padStart(6, '0');
+      return `plan-${Date.now()}-${random}`;
+    }
+
+    function slugify(text) {
+      const base = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').replace(/-{2,}/g, '-');
+      return base || 'business-plan';
+    }
+
+    function downloadPlan() {
+      if (!lastGeneratedPlan) return;
+      const blob = new Blob([lastGeneratedPlan.markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${slugify(lastGeneratedPlan.title)}-business-plan.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      announce('Markdown downloaded.', 'success');
+    }
+
+    nextBtn.addEventListener('click', () => {
+      const key = steps[currentStep].key;
+      const answer = responseField.value.trim();
+      if (!answer) {
+        announce('Please add an answer before continuing.', 'warning');
+        responseField.focus();
+        return;
+      }
+      state[key] = responseField.value;
+      if (currentStep === steps.length - 1) {
+        announce('All questions answered. Review the plan and save it when ready.', 'success');
+        renderPlan();
+        responseField.blur();
+        return;
+      }
+      currentStep += 1;
+      updateStep();
+      responseField.focus();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      const key = steps[currentStep].key;
+      state[key] = responseField.value;
+      if (currentStep === 0) return;
+      currentStep -= 1;
+      updateStep();
+      responseField.focus();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (!confirm('Clear all answers and start fresh?')) return;
+      Object.keys(state).forEach((key) => {
+        state[key] = '';
+      });
+      activePlanId = null;
+      currentStep = 0;
+      updateStep();
+      setActiveSavedItem(null);
+      saveBtn.textContent = 'Save this Plan';
+      announce('All answers cleared. Start fresh!', 'info');
+    });
+
+    responseField.addEventListener('input', () => {
+      state[steps[currentStep].key] = responseField.value;
+      renderPlan();
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const answers = normalizeAnswers(state);
+      const allAnswered = steps.every((step) => answers[step.key]);
+      if (!allAnswered) {
+        announce('Answer every question to save your plan.', 'warning');
+        return;
+      }
+
+      const plan = generatePlan(answers);
+      const payload = {
+        id: activePlanId || createId(),
+        title: plan.title,
+        summary: plan.summary,
+        answers,
+        plan: plan.markdown,
+        savedAt: Date.now()
+      };
+
+      if (activePlanId) {
+        savedPlans = savedPlans.map((item) => (item.id === payload.id ? payload : item));
+        announce('Plan updated.', 'success');
+      } else {
+        savedPlans.push(payload);
+        announce('Plan saved! Find it in the list on the right.', 'success');
+      }
+
+      activePlanId = payload.id;
+      persistPlans();
+      renderSavedList();
+      setActiveSavedItem(activePlanId);
+      saveBtn.textContent = 'Save Changes';
+    });
+
+    copyBtn.addEventListener('click', copyPlan);
+    downloadBtn.addEventListener('click', downloadPlan);
+
+    function loadPlans() {
+      try {
+        const stored = JSON.parse(localStorage.getItem('businessPlans') || '[]');
+        if (Array.isArray(stored)) {
+          savedPlans = stored
+            .filter((plan) => plan && typeof plan === 'object')
+            .map((plan) => ({
+              id: plan.id || createId(),
+              title: plan.title || 'Untitled Idea',
+              summary: plan.summary || '',
+              answers: normalizeAnswers(plan.answers),
+              plan: plan.plan || '',
+              savedAt: plan.savedAt || Date.now()
+            }));
+        }
+      } catch (error) {
+        console.error('Failed to parse saved plans', error);
+        savedPlans = [];
+      }
+      renderSavedList();
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        nextBtn.click();
+      }
+    });
+
+    loadPlans();
+    updateStep();
+  </script>
+
+</body>
+</html>
